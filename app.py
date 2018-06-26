@@ -19,7 +19,7 @@ class App:
         if event.type == pygame.QUIT:
             self._running = False
         elif event.type == pygame.MOUSEBUTTONUP:
-            self._grid.mark(int((pygame.mouse.get_pos()[0]/self.width)*8),int((pygame.mouse.get_pos()[1]/self.height)*8))
+            self._grid.click(int((pygame.mouse.get_pos()[0]/self.width)*8),int((pygame.mouse.get_pos()[1]/self.height)*8))
 
     def on_loop(self):
         pass
@@ -27,8 +27,14 @@ class App:
     def on_render(self):
         for i,l in enumerate(self._grid.grid):
             for j, elem in enumerate(l):
-                self._display_surf.blit(elem[0], (i*int(self.width/8), j*int(self.height/8)))
+                if elem[0] == 0:
+                    self._display_surf.blit(self._grid.greenSquare, (i*int(self.width/8), j*int(self.height/8)))
+                else:
+                    self._display_surf.blit(self._grid.yellowSquare, (i*int(self.width/8), j*int(self.height/8)))
+
                 self._display_surf.blit(self._grid.pieceSurfaces[elem[1].value], (i*int(self.width/8), j*int(self.height/8)))
+
+
                 if elem[2]== 1:
                     self._display_surf.blit(self._grid.frameSurface, (i*int(self.width/8), j*int(self.height/8)))
                 elif elem[2]==2:
