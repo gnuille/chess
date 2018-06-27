@@ -22,7 +22,8 @@ class App:
             self._grid.click(int((pygame.mouse.get_pos()[0]/self.width)*8),int((pygame.mouse.get_pos()[1]/self.height)*8))
 
     def on_loop(self):
-        pass
+        if self._grid.ended:
+            self._grid = Map(self.size)
 
     def on_render(self):
         for i,l in enumerate(self._grid.grid):

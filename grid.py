@@ -3,7 +3,7 @@ from pygame.locals import *
 from pieces import Pieces
 class Map():
     def __init__(self, dimm):
-        super().__init__()
+        self.ended = False
         self.turn = False #false = white turn  true black turn
         self.moving = False
         self.pieceSurfaces = [
@@ -40,7 +40,6 @@ class Map():
             for j in range(0,8):
                 if (i+j)%2 == 0:
                     self.grid[i][j][0] = 1
-
         self.grid[0][6][1] = Pieces.W_PAWN
         self.grid[1][6][1] = Pieces.W_PAWN
         self.grid[2][6][1] = Pieces.W_PAWN
@@ -257,6 +256,8 @@ class Map():
             self.movingI = i
             self.movingJ = j
         elif self.grid[i][j][2] > 0 and self.moving and (self.movingI, self.movingJ) != (i, j):
+            if self.grid[i][j][1] == Pieces.W_KING or self.grid[i][j][1] == Pieces.B_KING:
+                self.ended = True
             self.grid[i][j][1] = self.grid[self.movingI][self.movingJ][1]
             self.grid[self.movingI][self.movingJ][1] = Pieces.NONE
             self.movingI = -1
