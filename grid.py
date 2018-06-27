@@ -23,8 +23,8 @@ class Map():
 
         ]
 
-        self.pawnMovedW = [False for x in range(8)]
-        self.pawnMovedB = [False for x in range(8)]
+        self.movingI = -1
+        self.movingJ = -1
 
         self.frameSurface = pygame.transform.scale(pygame.image.load("img/frame.png").convert_alpha(), (int(dimm[0]/8), int(dimm[1]/8)))
         self.circleSurface = pygame.transform.scale(pygame.image.load("img/point.png").convert_alpha(), (int(dimm[0]/32), int(dimm[1]/32)))
@@ -76,8 +76,6 @@ class Map():
         self.grid[5][0][1] = Pieces.B_BISHOP
         self.grid[6][0][1] = Pieces.B_KNIGHT
         self.grid[7][0][1] = Pieces.B_ROOK
-
-        self.grid[4][4][1] = Pieces.W_KNIGHT
 
     def possibleMove(self, i, j, team):
         if (i >= 8 or i < 0 or j >= 8 or j < 0):
@@ -140,27 +138,31 @@ class Map():
                 self.mark(i+1, j-2)
             if self.possibleMove(i-1, j-2, team):
                 self.mark(i-1, j-2)
-        elif self.grid[i][j][1].value == 6 or self.grid[i][j][1].value == 12:
-            if not team:
-                if self.empty(i-1, j):
-                    self.mark(i-1, j)
-                if self.grid[i-1][j+1][1].value > 6:
-                    self.mark(i-1, j+1)
-                if self.grid[i-1][j-1][1].value > 6:
-                    self.mark(i-1, j-1)
-                if  i== 6:
-                    if self.empty(i-2, j):
-                        self.mark(i-2, j)
-            else:
-                if self.empty(i+1, j):
-                    self.mark(i+1, j)
-                if self.grid[i+1][j+1][1].value <=6 and self.grid[i+1][j+1][1].value > 0:
-                    self.mark(i+1, j+1)
-                if self.grid[i+1][j-1][1].value <=6 and self.grid[i+1][j-1][1].value > 0:
-                    self.mark(i+1, j-1)
-                if i == 1:
-                    if self.empty(i-2, j):
-                        self.mark(i-2, j)
+        elif self.grid[i][j][1].value == 6:
+            can_move_second = False
+            if self.empty(i, j-1):
+                can_move_second = True
+                self.mark(i, j-1)
+            if self.grid[i-1][j-1][1].value > 6:
+                self.mark(i-1, j-1)
+            if self.grid[i+1][j-1][1].value > 6:
+                self.mark(i+1, j-1)
+            if j == 6 and can_move_second:
+                if self.empty(i, j-2):
+                    self.mark(i, j-2)
+        elif self.grid[i][j][1].value == 12:
+            can_move_second = False
+            if self.empty(i, j+1):
+                can_move_second = True
+                self.mark(i, j+1)
+            if self.grid[i-1][j+1][1].value <= 6 and self.grid[i-1][j+1][1].value > 0:
+                self.mark(i-1, j+1)
+            if self.grid[i+1][j+1][1].value <= 6 and self.grid[i+1][j+1][1].value > 0:
+                self.mark(i+1, j+1)
+            if j == 1 and can_move_second:
+                if self.empty(i, j+2):
+                    self.mark(i, j+2)
+
     def evaluateIrect(self, i, j, team):
         b = True
         while b:
@@ -252,11 +254,34 @@ class Map():
             self.grid[i][j][2] = 1
             self.calculatePossibleMoves(i, j, self.turn)
             self.moving = True
+            self.movingI = i
+            self.movingJ = j
+        elif self.grid[i][j][2] > 0 and self.moving and (self.movingI, self.movingJ) != (i, j):
+            self.grid[i][j][1] = self.grid[self.movingI][self.movingJ][1]
+            self.grid[self.movingI][self.movingJ][1] = Pieces.NONE
+            self.movingI = -1
+            self.movingJ = -1
+            self.moving = False
+            self.turn = not self.turn
+            self.clear_board_markers()
+        else:
+            self.movingI = -1
+            self.movingJ = -1
+            self.moving = False
+            self.clear_board_markers()
+
+
     def mark(self, i, j):
         if self.grid[i][j][1].value == 0:
             self.grid[i][j][2] = 2
         else:
             self.grid[i][j][2] = 1
     def empty(self, i, j):
-        if i > 7 or i < 0 or j < 0 or j > 7: return false
-        return self.grid[i][j][1].value == 0
+        if i > 7 or i < 0 or j < 0 or j > 7: return False
+        if self.grid[i][j][1].value == 0:
+            return True
+        return False
+    def clear_board_markers(self):
+        for i in self.grid:
+            for elem in i:
+                elem[2] = 0
